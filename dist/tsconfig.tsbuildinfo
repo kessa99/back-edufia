@@ -1,0 +1,1 @@
+{"root":["../src/index.ts","../src/controllers/adminController/adminController.ts","../src/controllers/simpleUserController/simpleController.ts","../src/routes/user/userRoute.ts","../src/utils/seed/seed-question.ts","../src/utils/seed/seed-survys.ts"],"version":"5.6.2"}

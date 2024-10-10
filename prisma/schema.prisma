@@ -1,0 +1,112 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+
+model Survey {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  title            String      // Titre du sondage
+  description      String?     // Description du sondage
+
+  participantsCount Int        @default(0) // Nombre de participants
+  questions        Question[]  // Relation avec les questions
+  responses        Response[]  // Relation avec les réponses
+  statistics       Statistics[] // Statistiques associées
+
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+}
+
+model Question {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  text        String     // Texte de la question
+  questionType QuestionType
+  options     Option[]   // Options de réponse
+  statistics  Statistics[] // Statistiques associées
+
+  responses Response[] // Relation avec les réponses
+  responseOption ResponseOption[] // Relation avec les réponses
+
+  surveyId    String    @db.ObjectId       // ID du sondage auquel appartient la question
+  survey      Survey    @relation(fields: [surveyId], references: [id])
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+enum QuestionType {
+  SINGLE_CHOICE // Une seule réponse possible
+  MULTIPLE_CHOICE // Plusieurs réponses possibles
+  TEXT // Texte libre
+  RATING // Note sur une échelle
+}
+
+model Option {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  text        String     // Texte de l'option de réponse
+  questionId  String    @db.ObjectId       // ID de la question
+  question    Question   @relation(fields: [questionId], references: [id])
+  responseOption   ResponseOption[] // Relation avec les réponses
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Response {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  answer      String?  // Réponse donnée (texte ou autre)
+
+  surveyId    String   @db.ObjectId       // ID du sondage
+  survey      Survey   @relation(fields: [surveyId], references: [id])
+
+  questionId  String   @db.ObjectId       // ID de la question
+  question    Question @relation(fields: [questionId], references: [id])
+
+  textResponse String?  // Réponse textuelle (si applicable)
+
+  options     ResponseOption[]  // Références multiples à des options pour les choix multiples
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model ResponseOption {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+
+  responseId String   @db.ObjectId
+  response   Response @relation(fields: [responseId], references: [id])
+
+  questionId String   @db.ObjectId
+  question   Question @relation(fields: [questionId], references: [id])
+
+  optionId   String   @db.ObjectId
+  option     Option   @relation(fields: [optionId], references: [id])
+}
+
+
+model Statistics {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  totalResponses Int       @default(0) // Total des réponses
+  responseCount  Json      // Compte des réponses sous forme JSON
+
+  surveyId      String    @db.ObjectId       // ID du sondage
+  survey        Survey    @relation(fields: [surveyId], references: [id])
+
+  questionId    String    @db.ObjectId       // ID de la question
+  question      Question   @relation(fields: [questionId], references: [id])
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}

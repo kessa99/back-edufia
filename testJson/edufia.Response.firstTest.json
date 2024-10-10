@@ -1,0 +1,231 @@
+[{
+  "_id": {
+    "$oid": "6707bf4056e346d5f397bca2"
+  },
+  "surveyId": {
+    "$oid": "670712db49167e0eef12674f"
+  },
+  "questionId": {
+    "$oid": "670712de49167e0eef12677f"
+  },
+  "textResponse": null,
+  "createdAt": {
+    "$date": "2024-10-10T11:49:20.326Z"
+  },
+  "updatedAt": {
+    "$date": "2024-10-10T11:49:20.326Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6707bf4056e346d5f397bca5"
+  },
+  "answer": "5",
+  "surveyId": {
+    "$oid": "670712db49167e0eef12674f"
+  },
+  "questionId": {
+    "$oid": "670712f81ce13802a3bfd35e"
+  },
+  "createdAt": {
+    "$date": "2024-10-10T11:49:20.338Z"
+  },
+  "updatedAt": {
+    "$date": "2024-10-10T11:49:20.338Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6707bf4056e346d5f397bca6"
+  },
+  "surveyId": {
+    "$oid": "670712db49167e0eef12674f"
+  },
+  "questionId": {
+    "$oid": "670712df49167e0eef126783"
+  },
+  "textResponse": "On claque tout dans les vetements! youpi",
+  "createdAt": {
+    "$date": "2024-10-10T11:49:20.337Z"
+  },
+  "updatedAt": {
+    "$date": "2024-10-10T11:49:20.337Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6707c0e956e346d5f397bca8"
+  },
+  "answer": "5",
+  "surveyId": {
+    "$oid": "670712db49167e0eef12674f"
+  },
+  "questionId": {
+    "$oid": "670712f81ce13802a3bfd35e"
+  },
+  "createdAt": {
+    "$date": "2024-10-10T11:56:25.611Z"
+  },
+  "updatedAt": {
+    "$date": "2024-10-10T11:56:25.611Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6707c0ea56e346d5f397bca9"
+  },
+  "surveyId": {
+    "$oid": "670712db49167e0eef12674f"
+  },
+  "questionId": {
+    "$oid": "670712de49167e0eef12677f"
+  },
+  "textResponse": null,
+  "createdAt": {
+    "$date": "2024-10-10T11:56:25.617Z"
+  },
+  "updatedAt": {
+    "$date": "2024-10-10T11:56:25.617Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6707c0ea56e346d5f397bcaa"
+  },
+  "surveyId": {
+    "$oid": "670712db49167e0eef12674f"
+  },
+  "questionId": {
+    "$oid": "670712df49167e0eef126783"
+  },
+  "textResponse": "On claque tout dans les vetements! youpi",
+  "createdAt": {
+    "$date": "2024-10-10T11:56:25.619Z"
+  },
+  "updatedAt": {
+    "$date": "2024-10-10T11:56:25.619Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6707c10b6de5c47a7c1b4447"
+  },
+  "surveyId": {
+    "$oid": "670712db49167e0eef12674f"
+  },
+  "questionId": {
+    "$oid": "670712df49167e0eef126783"
+  },
+  "textResponse": "On claque tout dans les vetements! youpi",
+  "createdAt": {
+    "$date": "2024-10-10T11:56:59.806Z"
+  },
+  "updatedAt": {
+    "$date": "2024-10-10T11:56:59.806Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6707c10c6de5c47a7c1b4448"
+  },
+  "answer": "5",
+  "surveyId": {
+    "$oid": "670712db49167e0eef12674f"
+  },
+  "questionId": {
+    "$oid": "670712f81ce13802a3bfd35e"
+  },
+  "createdAt": {
+    "$date": "2024-10-10T11:56:59.807Z"
+  },
+  "updatedAt": {
+    "$date": "2024-10-10T11:56:59.807Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6707c10e6de5c47a7c1b4449"
+  },
+  "surveyId": {
+    "$oid": "670712db49167e0eef12674f"
+  },
+  "questionId": {
+    "$oid": "670712de49167e0eef12677f"
+  },
+  "createdAt": {
+    "$date": "2024-10-10T11:56:59.804Z"
+  },
+  "updatedAt": {
+    "$date": "2024-10-10T11:56:59.804Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6707c1ad6de5c47a7c1b444c"
+  },
+  "surveyId": {
+    "$oid": "670712db49167e0eef12674f"
+  },
+  "questionId": {
+    "$oid": "670712de49167e0eef12677f"
+  },
+  "createdAt": {
+    "$date": "2024-10-10T11:59:41.928Z"
+  },
+  "updatedAt": {
+    "$date": "2024-10-10T11:59:41.928Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6707c1ae6de5c47a7c1b444d"
+  },
+  "surveyId": {
+    "$oid": "670712db49167e0eef12674f"
+  },
+  "questionId": {
+    "$oid": "670712df49167e0eef126783"
+  },
+  "textResponse": "On claque tout dans les vetements! youpi",
+  "createdAt": {
+    "$date": "2024-10-10T11:59:41.933Z"
+  },
+  "updatedAt": {
+    "$date": "2024-10-10T11:59:41.933Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6707c1ae6de5c47a7c1b444e"
+  },
+  "surveyId": {
+    "$oid": "670712db49167e0eef12674f"
+  },
+  "questionId": {
+    "$oid": "670712db49167e0eef126750"
+  },
+  "createdAt": {
+    "$date": "2024-10-10T11:59:41.928Z"
+  },
+  "updatedAt": {
+    "$date": "2024-10-10T11:59:41.928Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6707c1ae6de5c47a7c1b444f"
+  },
+  "answer": "5",
+  "surveyId": {
+    "$oid": "670712db49167e0eef12674f"
+  },
+  "questionId": {
+    "$oid": "670712f81ce13802a3bfd35e"
+  },
+  "createdAt": {
+    "$date": "2024-10-10T11:59:41.933Z"
+  },
+  "updatedAt": {
+    "$date": "2024-10-10T11:59:41.933Z"
+  }
+}]
