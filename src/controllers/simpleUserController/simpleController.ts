@@ -119,4 +119,29 @@ export const submitSurveyResponse = async (req: Request, res: Response) => {
     }
 };
 
+export const getSurveyDetails = async (req: Request, res: Response) => {
+    const { surveyId } = req.params;
 
+    try {
+        // Vérifier si le sondage existe et récupérer les questions et options associées
+        const survey = await prisma.survey.findUnique({
+            where: { id: surveyId },
+            include: {
+                questions: {
+                    include: {
+                        options: true, // Inclure les options des questions
+                    },
+                },
+            },
+        });
+
+        if (!survey) {
+            return res.status(404).json({ message: 'Survey not found' });
+        }
+
+        return res.status(200).json({ survey });
+    } catch (error: any) {
+        console.error('Error retrieving survey details:', error.message);
+        return res.status(500).json({ message: 'Internal server error', error: error.message });
+    }
+};
