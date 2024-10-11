@@ -8,6 +8,7 @@ import swaggerUi from 'swagger-ui-express';
 import swaggerJSDoc from 'swagger-jsdoc';
 import dotenv from 'dotenv';
 import userRoute from './routes/user/userRoute';
+import surveyRoute from './routes/admin/surveyRoute';
 
 // 2. Initialisation de l'application express
 dotenv.config();
@@ -32,6 +33,7 @@ app.set('trust proxy', 1);
 
 // 4. Enregistrement des routes
 app.use('/api', userRoute);  // Placer les routes avant le middleware 404
+app.use('/api/admin', surveyRoute);  // Placer les routes avant le middleware 404
 
 // Middleware pour gérer les routes non trouvées (404)
 app.use('*', (req: Request, res: Response, next: NextFunction) => {

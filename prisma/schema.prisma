@@ -17,7 +17,7 @@ datasource db {
 
 model Survey {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  title            String      // Titre du sondage
+  title            String      @unique // Titre du sondage
   description      String?     // Description du sondage
 
   participantsCount Int        @default(0) // Nombre de participants
