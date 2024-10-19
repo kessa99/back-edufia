@@ -191,156 +191,114 @@ export const updateSurvey = async (req: Request, res: Response) => {
   }
 }
 
+// Fonction qui récupère un sondage avec ses questions et options
 export const getSurvey = async (req: Request, res: Response) => {
-    try {
-        const surveys = await prisma.survey.findMany();
-        res.status(200).json(surveys);
-    } catch (error) {
-        res.status(500).json({ error: 'erreur lors de la recherche des sondages' });
-    }
-};
+  const { id } = req.params; // Récupère l'ID du sondage depuis l'URL
+
+  try {
+      // Recherche du sondage avec les questions et options associées
+      const survey = await prisma.survey.findUnique({
+          where: { id },
+          include: {
+              questions: {
+                  include: {
+                      options: true, // Inclure les options de chaque question
+                  },
+              },
+          },
+      });
+
+      // Si le sondage n'est pas trouvé
+      if (!survey) {
+          return res.status(404).json({ error: "Sondage non trouvé" });
+      }
+
+      // Retourne les données du sondage en format JSON
+      res.json(survey);
+
+  } catch (error: any) {
+      // Gestion des erreurs et envoi d'une réponse en cas de problème
+      res.status(500).json({ error: error.message });
+  }
+}
 
 export const submitSurveyResponse = async (req: Request, res: Response) => {
-    const { surveyId, responses } = req.body;
+  const { surveyId, responses } = req.body;
 
-    try {
-        // Vérifier si le sondage existe
-        const survey = await prisma.survey.findUnique({
-            where: { id: surveyId },
-        });
+  if (!surveyId || !Array.isArray(responses)) {
+      return res.status(400).json({ message: 'Invalid input: surveyId and responses are required' });
+  }
 
-        if (!survey) {
-            return res.status(404).json({ message: 'Survey not found' });
-        }
+  const survey = await prisma.survey.findUnique({
+      where: { id: surveyId },
+  });
 
-        // Liste des promesses pour traiter toutes les réponses en parallèle
-        const responsePromises = responses.map(async (response: any) => {
-            const { questionId, optionId, textResponse, rating } = response;
+  if (!survey) {
+      return res.status(404).json({ message: 'Survey not found' });
+  }
 
-            // Récupérer la question
-            const question = await prisma.question.findUnique({
-                where: { id: questionId },
-            });
+  try {
+      const responsePromises = responses.map(async (response: any) => {
+          const { questionId, optionId, textResponse, rating } = response;
 
-            if (!question) {
-                throw new Error(`Question with id ${questionId} not found`);
-            }
+          const question = await prisma.question.findUnique({
+              where: { id: questionId },
+          });
 
-            // Traitement selon le type de question
-            if (question.questionType === 'SINGLE_CHOICE') {
-                if (!optionId || typeof optionId !== 'string') {
-                    throw new Error('OptionId is required for single_choice questions and must be a string');
-                }
+          if (!question) {
+              throw new Error(`Question with id ${questionId} not found`);
+          }
 
-                // Créer la réponse pour la question à choix unique
-                const createdResponse = await prisma.response.create({
-                    data: {
-                        surveyId,
-                        questionId,
-                    },
-                });
+          // Créer la réponse
+          let createdResponseData: any = {
+              surveyId,
+              questionId,
+          };
 
-                // Créer l'association avec l'option choisie
-                await prisma.responseOption.create({
-                    data: {
-                        responseId: createdResponse.id,
-                        optionId, // Liaison de l'option sélectionnée
-                        questionId,
-                    },
-                });
+          // Traitement selon le type de question
+          if (question.questionType === 'SINGLE_CHOICE') {
+              if (!optionId || typeof optionId !== 'string') {
+                  throw new Error('OptionId est requis et doit être une chaîne de caractères');
+              }
+              createdResponseData.answer = optionId;
 
-            } else if (question.questionType === 'MULTIPLE_CHOICE') {
-                if (!Array.isArray(optionId)) {
-                    throw new Error('OptionId must be an array for multiple_choice questions');
-                }
+          } else if (question.questionType === 'MULTIPLE_CHOICE') {
+              if (!Array.isArray(optionId)) {
+                  throw new Error('OptionId doit être un tableau pour les questions de type multiple_choice');
+              }
+              createdResponseData.answer = optionId.join(', ');
 
-                // Créer la réponse pour la question à choix multiple
-                const createdResponse = await prisma.response.create({
-                    data: {
-                        surveyId,
-                        questionId,
-                    },
-                });
+          } else if (question.questionType === 'TEXT') {
+              if (!textResponse) {
+                  throw new Error('La réponse textuelle est requise pour les questions de type texte');
+              }
+              createdResponseData.textResponse = textResponse;
 
-                // Associer les options avec la réponse via la table intermédiaire `responseOption`
-                const optionPromises = optionId.map((option: string) => {
-                    return prisma.responseOption.create({
-                        data: {
-                            responseId: createdResponse.id,
-                            optionId: option,
-                            questionId,
-                        },
-                    });
-                });
+          } else if (question.questionType === 'RATING') {
+              if (typeof rating !== 'number') {
+                  throw new Error('Rating est requis et doit être un nombre pour les questions de type évaluation');
+              }
+              createdResponseData.answer = rating.toString();
+          }
 
-                await Promise.all(optionPromises);
+          // Créer la réponse
+          return prisma.response.create({
+              data: createdResponseData,
+          });
+      });
 
-            } else if (question.questionType === 'TEXT') {
-                if (!textResponse) {
-                    throw new Error('Text response is required for text questions');
-                }
+      // Attendre que toutes les réponses soient créées
+      const createdResponses = await Promise.all(responsePromises);
 
-                // Créer la réponse pour une question textuelle
-                return prisma.response.create({
-                    data: {
-                        surveyId,
-                        questionId,
-                        textResponse,
-                    },
-                });
-
-            } else if (question.questionType === 'RATING') {
-                if (typeof rating !== 'number') {
-                    throw new Error('Rating is required and must be a number for rating questions');
-                }
-
-                // Créer la réponse pour une question d'évaluation
-                return prisma.response.create({
-                    data: {
-                        surveyId,
-                        questionId,
-                        answer: rating.toString(), // Enregistrer le rating comme une chaîne
-                    },
-                });
-            }
-        });
-
-        // Attendre que toutes les réponses soient traitées
-        await Promise.all(responsePromises);
-
-        return res.status(200).json({ message: 'Responses submitted successfully' });
-    } catch (error: any) {
-        console.error('Error submitting survey response:', error.message);
-        return res.status(500).json({ message: 'Internal server error', error: error.message });
-    }
+      return res.status(200).json({ message: 'Réponses soumises avec succès', createdResponses });
+  } catch (error: any) {
+      console.error('Erreur lors de la soumission de la réponse du sondage:', error.message);
+      return res.status(500).json({ message: 'Erreur interne du serveur', error: error.message });
+  }
 };
 
-export const getSurveyDetails = async (req: Request, res: Response) => {
-    const { surveyId } = req.params;
 
-    try {
-        // Vérifier si le sondage existe et récupérer les questions et options associées
-        const survey = await prisma.survey.findUnique({
-            where: { id: surveyId },
-            include: {
-                questions: {
-                    include: {
-                        options: true, // Inclure les options des questions
-                    },
-                },
-            },
-        });
 
-        if (!survey) {
-            return res.status(404).json({ message: 'Survey not found' });
-        }
-
-        return res.status(200).json({ survey });
-    } catch (error: any) {
-        console.error('Error retrieving survey details:', error.message);
-        return res.status(500).json({ message: 'Internal server error', error: error.message });
-    }
-};
 
 export const getOptionResponses = async (req: Request, res: Response) => {
     try {
@@ -412,5 +370,73 @@ export const getRatingResponses = async (req: Request, res: Response) => {
       res.status(500).json({ error: 'Error fetching rating responses' });
     }
 };
-  
-  
+
+export const getSurveyDetails = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const survey = await prisma.survey.findUnique({
+      where: { id },
+      include: {
+        questions: {
+          include: {
+            options: true,
+            responses: {
+              include: {
+                options: {
+                  include: {
+                    option: true, // Inclure les options dans les réponses multiples
+                  }
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!survey) {
+      return res.status(404).json({ message: 'Sondage non trouvé' });
+    }
+
+    const formattedSurvey = {
+      id: survey.id,
+      title: survey.title,
+      description: survey.description,
+      participantsCount: survey.participantsCount,
+      questions: survey.questions.map((question) => ({
+        id: question.id,
+        text: question.text,
+        type: question.questionType,
+        options: question.options.map((option) => ({
+          id: option.id,
+          text: option.text,
+        })),
+        responses: question.responses.map((response) => ({
+          id: response.id,
+          textResponse: response.textResponse,
+          rating: response.rating,
+          selectedOptions: response.options.map((responseOption) => ({
+            id: responseOption.optionId,
+            text: responseOption.option?.text, // Affichage du texte de l'option
+          })),
+        })),
+      })),
+    };
+
+    return res.status(200).json(formattedSurvey);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Erreur serveur', error });
+  }
+};
+
+
+// obtenir les le sondage avec les questions et les options
+export const getSurveyWithQuestionsAndOptions = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching survey with questions and options' });
+  }
+}

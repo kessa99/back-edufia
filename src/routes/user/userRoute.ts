@@ -1,6 +1,18 @@
 import { Router } from 'express';
-import { getSurveyDetails, submitSurveyResponse, getOptionResponses, getTextResponses, getRatingResponses, getSurvey, createSurvey, deleteSurvey, updateSurvey } from '../../controllers/simpleUserController/simpleController'; 
+import { 
+  submitSurveyResponse, 
+  getOptionResponses, 
+  getTextResponses, 
+  getRatingResponses, 
+  getSurvey, 
+  createSurvey, 
+  deleteSurvey, 
+  updateSurvey, 
+  getSurveyDetails
+} from '../../controllers/simpleUserController/simpleController';
+
 import { sendErrorResponse } from '../../utils/response/responseUtils';
+
 const router = Router();
 
 // creation d'un sondage
@@ -39,7 +51,7 @@ router.post("/submit-survey", async (req, res) => {
   }
 });
 
-router.get("/surveys/:surveyId", async (req, res) => {
+router.get("/surveys/:id/questions-responses", async (req, res) => {
   try {
     await getSurveyDetails(req, res);
   } catch (error: any) {
@@ -73,7 +85,7 @@ router.get("/surveys/:surveyId/responses/rating", async (req, res) => {
   }
 });
 
-router.get("/surveys", async (req, res) => {
+router.get("/surveys/:id", async (req, res) => {
   try {
     await getSurvey(req, res);
   } catch (error: any) {

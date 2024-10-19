@@ -111,7 +111,7 @@ const surveys = [
         },
         {
             text: "Comment gérez-vous vos dettes ensemble ?",
-            questionType: "MULTIPLE_CHOICE",
+            questionType: "SINGLE_CHOICE",
             options: [
               { text: "Nous avons un plan clair" },
               { text: "Nous avons un plan vague" },
@@ -120,6 +120,18 @@ const surveys = [
         },
         {
             text: "Comment gérez-vous les fêtes de fin d'année ?",
+            questionType: "TEXT",
+        },
+        {
+            text: "Quelles sont vos principales préoccupations financières en tant que couple ?",
+            questionType: "TEXT",
+        },
+        {
+            text: "Y a-t-il des domaines où vous aimeriez améliorer votre gestion financière ?",
+            questionType: "TEXT",
+        },
+        {
+            text: "Que souhaiteriez-vous acquérir à l’issue de cette CCF 2024 ?",
             questionType: "TEXT",
         },
         // Question de type rating

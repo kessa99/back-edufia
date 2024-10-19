@@ -29,32 +29,7 @@ export const createSurvey = async (req: Request, res: Response) => {
     }
 };
 
-//fonction qui permet d'afficher un sondage avec ses questions et ses options
-export const getSurvey = async (req: Request, res: Response) => {
-    const { surveyId } = req.params;
 
-    try {
-        const survey = await prisma.survey.findUnique({
-            where: { id: surveyId },
-            include: {
-                questions: {
-                    include: {
-                        options: true,
-                    },
-                },
-            },
-        });
-
-        if (!survey) {
-            return res.status(404).json({ error: "Sondage non trouvé" });
-        }
-
-        res.json(survey);
-        
-    } catch (error: any) {
-        res.status(500).json({ error: error.message });
-    }
-}
 
 export const getStatistics = async (req: Request, res: Response) => {
   try {
