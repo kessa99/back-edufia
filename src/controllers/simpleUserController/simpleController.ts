@@ -201,9 +201,9 @@ export const getSurvey = async (req: Request, res: Response) => {
           where: { id },
           include: {
               questions: {
-                  include: {
-                      options: true, // Inclure les options de chaque question
-                  },
+                include: {
+                  options: true,
+                },
               },
           },
       });
@@ -226,74 +226,110 @@ export const submitSurveyResponse = async (req: Request, res: Response) => {
   const { surveyId, responses } = req.body;
 
   if (!surveyId || !Array.isArray(responses)) {
-      return res.status(400).json({ message: 'Invalid input: surveyId and responses are required' });
-  }
-
-  const survey = await prisma.survey.findUnique({
-      where: { id: surveyId },
-  });
-
-  if (!survey) {
-      return res.status(404).json({ message: 'Survey not found' });
+    return res.status(400).json({ message: 'Entrée invalide : surveyId et responses sont requis' });
   }
 
   try {
-      const responsePromises = responses.map(async (response: any) => {
-          const { questionId, optionId, textResponse, rating } = response;
+    const survey = await prisma.survey.findUnique({
+      where: { id: surveyId },
+      include: {
+        questions: {
+          include: {
+            options: true,
+          },
+        },
+      },
+    });
 
-          const question = await prisma.question.findUnique({
-              where: { id: questionId },
-          });
+    if (!survey) {
+      return res.status(404).json({ message: 'Sondage non trouvé' });
+    }
 
-          if (!question) {
-              throw new Error(`Question with id ${questionId} not found`);
-          }
+    const simplifiedResponses = await Promise.all(
+      responses.map(async (response: any) => {
+        const { questionId, optionId, textResponse, answer } = response;
+        const question = survey.questions.find(q => q.id === questionId);
 
-          // Créer la réponse
-          let createdResponseData: any = {
-              surveyId,
-              questionId,
-          };
+        if (!question) {
+          throw new Error(`Question avec l'id ${questionId} non trouvée`);
+        }
 
-          // Traitement selon le type de question
-          if (question.questionType === 'SINGLE_CHOICE') {
-              if (!optionId || typeof optionId !== 'string') {
-                  throw new Error('OptionId est requis et doit être une chaîne de caractères');
-              }
-              createdResponseData.answer = optionId;
+        let responseData: any = {
+          surveyId,
+          questionId,
+        };
 
-          } else if (question.questionType === 'MULTIPLE_CHOICE') {
-              if (!Array.isArray(optionId)) {
-                  throw new Error('OptionId doit être un tableau pour les questions de type multiple_choice');
-              }
-              createdResponseData.answer = optionId.join(', ');
+        let answerText = '';
 
-          } else if (question.questionType === 'TEXT') {
-              if (!textResponse) {
-                  throw new Error('La réponse textuelle est requise pour les questions de type texte');
-              }
-              createdResponseData.textResponse = textResponse;
+        switch (question.questionType) {
+          case 'SINGLE_CHOICE':
+            if (!optionId || typeof optionId !== 'string') {
+              throw new Error('OptionId est requis et doit être une chaîne de caractères pour les questions à choix unique');
+            }
+            const option = question.options.find(opt => opt.id === optionId);
+            answerText = option ? option.text : '';
+            responseData.answer = optionId;
+            break;
 
-          } else if (question.questionType === 'RATING') {
-              if (typeof rating !== 'number') {
-                  throw new Error('Rating est requis et doit être un nombre pour les questions de type évaluation');
-              }
-              createdResponseData.answer = rating.toString();
-          }
+          case 'MULTIPLE_CHOICE':
+            if (!Array.isArray(optionId)) {
+              throw new Error('OptionId doit être un tableau pour les questions à choix multiples');
+            }
+            const selectedOptions = question.options.filter(opt => optionId.includes(opt.id));
+            answerText = selectedOptions.map(opt => opt.text).join(', ');
+            responseData.answer = optionId.join(', ');
+            break;
 
-          // Créer la réponse
-          return prisma.response.create({
-              data: createdResponseData,
-          });
-      });
+          case 'TEXT':
+            if (typeof textResponse !== 'string') {
+              throw new Error('La réponse textuelle est requise pour les questions de type texte');
+            }
+            answerText = textResponse;
+            responseData.textResponse = textResponse;
+            break;
 
-      // Attendre que toutes les réponses soient créées
-      const createdResponses = await Promise.all(responsePromises);
+          case 'RATING':
+            if (typeof answer !== 'string' && typeof answer !== 'number') {
+              throw new Error('La réponse (answer) est requise et doit être une chaîne ou un nombre pour les questions de type évaluation');
+            }
+            answerText = answer.toString();
+            responseData.answer = answer.toString();
+            break;
 
-      return res.status(200).json({ message: 'Réponses soumises avec succès', createdResponses });
+          default:
+            throw new Error(`Type de question non pris en charge: ${question.questionType}`);
+        }
+
+        const createdResponse = await prisma.response.create({
+          data: responseData,
+        });
+
+        return {
+          questionId: question.id,
+          questionText: question.text,
+          responseId: createdResponse.id,
+          answerText,
+        };
+      })
+    );
+
+    // Mettre à jour le nombre de participants du sondage
+    await prisma.survey.update({
+      where: { id: surveyId },
+      data: {
+        participantsCount: {
+          increment: 1,
+        },
+      },
+    });
+
+    return res.status(200).json({
+      message: 'Réponses soumises avec succès',
+      responses: simplifiedResponses,
+    });
   } catch (error: any) {
-      console.error('Erreur lors de la soumission de la réponse du sondage:', error.message);
-      return res.status(500).json({ message: 'Erreur interne du serveur', error: error.message });
+    console.error('Erreur lors de la soumission de la réponse du sondage:', error.message);
+    return res.status(500).json({ message: 'Erreur interne du serveur', error: error.message });
   }
 };
 
@@ -440,3 +476,8 @@ export const getSurveyWithQuestionsAndOptions = async (req: Request, res: Respon
     res.status(500).json({ error: 'Error fetching survey with questions and options' });
   }
 }
+
+
+
+
+
