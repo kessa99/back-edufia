@@ -245,7 +245,7 @@ export const submitSurveyResponse = async (req: Request, res: Response) => {
       return res.status(404).json({ message: 'Sondage non trouvé' });
     }
 
-    const simplifiedResponses = await Promise.all(
+    const createdResponses = await Promise.all(
       responses.map(async (response: any) => {
         const { questionId, optionId, textResponse, answer } = response;
         const question = survey.questions.find(q => q.id === questionId);
@@ -254,30 +254,21 @@ export const submitSurveyResponse = async (req: Request, res: Response) => {
           throw new Error(`Question avec l'id ${questionId} non trouvée`);
         }
 
-        let responseData: any = {
-          surveyId,
-          questionId,
-        };
-
         let answerText = '';
 
         switch (question.questionType) {
           case 'SINGLE_CHOICE':
-            if (!optionId || typeof optionId !== 'string') {
+          case 'MULTIPLE_CHOICE':
+            if (question.questionType === 'SINGLE_CHOICE' && (!optionId || typeof optionId !== 'string')) {
               throw new Error('OptionId est requis et doit être une chaîne de caractères pour les questions à choix unique');
             }
-            const option = question.options.find(opt => opt.id === optionId);
-            answerText = option ? option.text : '';
-            responseData.answer = optionId;
-            break;
-
-          case 'MULTIPLE_CHOICE':
-            if (!Array.isArray(optionId)) {
+            if (question.questionType === 'MULTIPLE_CHOICE' && !Array.isArray(optionId)) {
               throw new Error('OptionId doit être un tableau pour les questions à choix multiples');
             }
-            const selectedOptions = question.options.filter(opt => optionId.includes(opt.id));
+            const selectedOptions = Array.isArray(optionId) 
+              ? question.options.filter(opt => optionId.includes(opt.id))
+              : question.options.filter(opt => opt.id === optionId);
             answerText = selectedOptions.map(opt => opt.text).join(', ');
-            responseData.answer = optionId.join(', ');
             break;
 
           case 'TEXT':
@@ -285,7 +276,6 @@ export const submitSurveyResponse = async (req: Request, res: Response) => {
               throw new Error('La réponse textuelle est requise pour les questions de type texte');
             }
             answerText = textResponse;
-            responseData.textResponse = textResponse;
             break;
 
           case 'RATING':
@@ -293,7 +283,6 @@ export const submitSurveyResponse = async (req: Request, res: Response) => {
               throw new Error('La réponse (answer) est requise et doit être une chaîne ou un nombre pour les questions de type évaluation');
             }
             answerText = answer.toString();
-            responseData.answer = answer.toString();
             break;
 
           default:
@@ -301,7 +290,12 @@ export const submitSurveyResponse = async (req: Request, res: Response) => {
         }
 
         const createdResponse = await prisma.response.create({
-          data: responseData,
+          data: {
+            surveyId,
+            questionId,
+            questionText: question.text,
+            answerText,
+          },
         });
 
         return {
@@ -325,7 +319,7 @@ export const submitSurveyResponse = async (req: Request, res: Response) => {
 
     return res.status(200).json({
       message: 'Réponses soumises avec succès',
-      responses: simplifiedResponses,
+      responses: createdResponses,
     });
   } catch (error: any) {
     console.error('Erreur lors de la soumission de la réponse du sondage:', error.message);
@@ -337,134 +331,134 @@ export const submitSurveyResponse = async (req: Request, res: Response) => {
 
 
 export const getOptionResponses = async (req: Request, res: Response) => {
-    try {
-      const optionResponses = await prisma.response.findMany({
-        where: {
-          options: {
-            some: {}, // Récupère uniquement les réponses ayant des options associées
-          },
-        },
-        include: {
-          options: true, // Inclure les options de réponse
-        },
-      });
-      res.status(200).json(optionResponses);
-    } catch (error) {
-      res.status(500).json({ error: 'Error fetching option responses' });
-    }
+    // try {
+    //   const optionResponses = await prisma.response.findMany({
+    //     where: {
+    //       options: {
+    //         some: {}, // Récupère uniquement les réponses ayant des options associées
+    //       },
+    //     },
+    //     include: {
+    //       options: true, // Inclure les options de réponse
+    //     },
+    //   });
+    //   res.status(200).json(optionResponses);
+    // } catch (error) {
+    //   res.status(500).json({ error: 'Error fetching option responses' });
+    // }
 };
 
 export const getTextResponses = async (req: Request, res: Response) => {
-    try {
-      const textResponses = await prisma.response.findMany({
-        where: {
-          textResponse: {
-            not: null, // Filtrer uniquement les réponses avec du texte
-          },
-        },
-      });
-      res.status(200).json(textResponses);
-    } catch (error) {
-      res.status(500).json({ error: 'Error fetching text responses' });
-    }
+    // try {
+    //   const textResponses = await prisma.response.findMany({
+    //     where: {
+    //       textResponse: {
+    //         not: null, // Filtrer uniquement les réponses avec du texte
+    //       },
+    //     },
+    //   });
+    //   res.status(200).json(textResponses);
+    // } catch (error) {
+    //   res.status(500).json({ error: 'Error fetching text responses' });
+    // }
 };
 
 export const getRatingResponses = async (req: Request, res: Response) => {
-    try {
-        // Récupérer toutes les questions de type RATING
-        const ratingQuestions = await prisma.question.findMany({
-            where: {
-                questionType: 'RATING', // Assurez-vous que ce champ est présent dans votre modèle
-            },
-            include: {
-                options: true, // Inclure les options pour chaque question
-            },
-        });
+    // try {
+    //     // Récupérer toutes les questions de type RATING
+    //     const ratingQuestions = await prisma.question.findMany({
+    //         where: {
+    //             questionType: 'RATING', // Assurez-vous que ce champ est présent dans votre modèle
+    //         },
+    //         include: {
+    //             options: true, // Inclure les options pour chaque question
+    //         },
+    //     });
   
-        // Récupérer les réponses associées aux questions de type RATING
-        const ratingResponses = await prisma.response.findMany({
-            where: {
-                questionId: {
-                    in: ratingQuestions.map((question) => question.id), // Obtenez les IDs des questions de type RATING
-                },
-            },
-            include: {
-                options: true, // Inclure les options de réponse si applicable
-            }, 
-        });
+    //     // Récupérer les réponses associées aux questions de type RATING
+    //     const ratingResponses = await prisma.response.findMany({
+    //         where: {
+    //             questionId: {
+    //                 in: ratingQuestions.map((question) => question.id), // Obtenez les IDs des questions de type RATING
+    //             },
+    //         },
+    //         include: {
+    //             options: true, // Inclure les options de réponse si applicable
+    //         }, 
+    //     });
   
-        // Combinez les questions avec les réponses pour une structure plus complète
-        const combinedResponses = ratingQuestions.map((question) => {
-            return {
-                ...question,
-                responses: ratingResponses.filter(response => response.questionId === question.id),
-            };
-        });
+    //     // Combinez les questions avec les réponses pour une structure plus complète
+    //     const combinedResponses = ratingQuestions.map((question) => {
+    //         return {
+    //             ...question,
+    //             responses: ratingResponses.filter(response => response.questionId === question.id),
+    //         };
+    //     });
   
-      res.status(200).json(combinedResponses);
-    } catch (error) {
-      res.status(500).json({ error: 'Error fetching rating responses' });
-    }
+    //   res.status(200).json(combinedResponses);
+    // } catch (error) {
+    //   res.status(500).json({ error: 'Error fetching rating responses' });
+    // }
 };
 
 export const getSurveyDetails = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
+  // try {
+  //   const { id } = req.params;
 
-    const survey = await prisma.survey.findUnique({
-      where: { id },
-      include: {
-        questions: {
-          include: {
-            options: true,
-            responses: {
-              include: {
-                options: {
-                  include: {
-                    option: true, // Inclure les options dans les réponses multiples
-                  }
-                },
-              },
-            },
-          },
-        },
-      },
-    });
+  //   const survey = await prisma.survey.findUnique({
+  //     where: { id },
+  //     include: {
+  //       questions: {
+  //         include: {
+  //           options: true,
+  //           responses: {
+  //             include: {
+  //               options: {
+  //                 include: {
+  //                   option: true, // Inclure les options dans les réponses multiples
+  //                 }
+  //               },
+  //             },
+  //           },
+  //         },
+  //       },
+  //     },
+  //   });
 
-    if (!survey) {
-      return res.status(404).json({ message: 'Sondage non trouvé' });
-    }
+  //   if (!survey) {
+  //     return res.status(404).json({ message: 'Sondage non trouvé' });
+  //   }
 
-    const formattedSurvey = {
-      id: survey.id,
-      title: survey.title,
-      description: survey.description,
-      participantsCount: survey.participantsCount,
-      questions: survey.questions.map((question) => ({
-        id: question.id,
-        text: question.text,
-        type: question.questionType,
-        options: question.options.map((option) => ({
-          id: option.id,
-          text: option.text,
-        })),
-        responses: question.responses.map((response) => ({
-          id: response.id,
-          textResponse: response.textResponse,
-          rating: response.rating,
-          selectedOptions: response.options.map((responseOption) => ({
-            id: responseOption.optionId,
-            text: responseOption.option?.text, // Affichage du texte de l'option
-          })),
-        })),
-      })),
-    };
+  //   const formattedSurvey = {
+  //     id: survey.id,
+  //     title: survey.title,
+  //     description: survey.description,
+  //     participantsCount: survey.participantsCount,
+  //     questions: survey.questions.map((question) => ({
+  //       id: question.id,
+  //       text: question.text,
+  //       type: question.questionType,
+  //       options: question.options.map((option) => ({
+  //         id: option.id,
+  //         text: option.text,
+  //       })),
+  //       responses: question.responses.map((response) => ({
+  //         id: response.id,
+  //         textResponse: response.textResponse,
+  //         rating: response.rating,
+  //         selectedOptions: response.options.map((responseOption) => ({
+  //           id: responseOption.optionId,
+  //           text: responseOption.option?.text, // Affichage du texte de l'option
+  //         })),
+  //       })),
+  //     })),
+  //   };
 
-    return res.status(200).json(formattedSurvey);
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Erreur serveur', error });
-  }
+  //   return res.status(200).json(formattedSurvey);
+  // } catch (error) {
+  //   console.error(error);
+  //   return res.status(500).json({ message: 'Erreur serveur', error });
+  // }
 };
 
 
@@ -476,6 +470,7 @@ export const getSurveyWithQuestionsAndOptions = async (req: Request, res: Respon
     res.status(500).json({ error: 'Error fetching survey with questions and options' });
   }
 }
+
 
 
 

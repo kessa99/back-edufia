@@ -65,23 +65,16 @@ model Option {
 }
 
 model Response {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  answer      String?  // Réponse donnée (texte ou autre)
-
-  surveyId    String   @db.ObjectId       // ID du sondage
-  survey      Survey   @relation(fields: [surveyId], references: [id])
-
-  questionId  String   @db.ObjectId       // ID de la question
-  question    Question @relation(fields: [questionId], references: [id])
-
-  textResponse String?  // Réponse textuelle (si applicable)
-
-  options     ResponseOption[]  // Références multiples à des options pour les choix multiples
-
-  rating      Int?     // Note attribuée par l'utilisateur (pour les questions de type RATING)
-
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  questionId    String   @db.ObjectId
+  question      Question @relation(fields: [questionId], references: [id])
+  surveyId      String   @db.ObjectId
+  survey        Survey   @relation(fields: [surveyId], references: [id])
+  questionText  String
+  answerText    String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  responseOptions ResponseOption[]
 }
 
 
