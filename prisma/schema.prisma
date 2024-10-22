@@ -69,6 +69,7 @@ model Response {
   questionId    String   @db.ObjectId
   question      Question @relation(fields: [questionId], references: [id])
   surveyId      String   @db.ObjectId
+  questionType  QuestionType
   survey        Survey   @relation(fields: [surveyId], references: [id])
   questionText  String
   answerText    String

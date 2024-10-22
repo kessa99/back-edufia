@@ -294,6 +294,7 @@ export const submitSurveyResponse = async (req: Request, res: Response) => {
             surveyId,
             questionId,
             questionText: question.text,
+            questionType: question.questionType,
             answerText,
           },
         });
@@ -301,6 +302,7 @@ export const submitSurveyResponse = async (req: Request, res: Response) => {
         return {
           questionId: question.id,
           questionText: question.text,
+          questionType: question.questionType,
           responseId: createdResponse.id,
           answerText,
         };
