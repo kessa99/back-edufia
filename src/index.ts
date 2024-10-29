@@ -9,6 +9,7 @@ import swaggerJSDoc from 'swagger-jsdoc';
 import dotenv from 'dotenv';
 import userRoute from './routes/user/userRoute';
 import surveyRoute from './routes/admin/surveyRoute';
+import { getSurvey } from './controllers/simpleUserController/simpleController';
 
 // 2. Initialisation de l'application express
 dotenv.config();
@@ -32,6 +33,26 @@ app.use(express.urlencoded({ extended: true }));
 app.set('trust proxy', 1);
 
 // 4. Enregistrement des routes
+
+app.get("/", async (req, res) => {
+    try {
+      const post = await prisma.survey.findUnique({
+        where: {
+          id: "67139ba729f6d26d45c4dd07",
+        },
+      });
+      res.json({
+        status: "success",
+        data: post
+      });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+  
+
+// Fonction pour obtenir le sondage
+  
 app.use('/api', userRoute);  // Placer les routes avant le middleware 404
 app.use('/api/admin', surveyRoute);  // Placer les routes avant le middleware 404
 
