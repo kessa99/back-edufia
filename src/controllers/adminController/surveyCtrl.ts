@@ -4,7 +4,7 @@ import { PrismaClient, QuestionType } from '@prisma/client';
 const prisma = new PrismaClient();
 
 export const createSurvey = async (req: Request, res: Response) => {
-    const { titl, description } = req.body;
+    const { title, description } = req.body;
 
     try {
 
