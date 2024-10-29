@@ -30,25 +30,28 @@ app.use(express.urlencoded({ extended: true }));
 app.set('trust proxy', 1);
 
 // Route racine
-app.get("/", async (req: Request, res: Response) => {
-    try {
-      const post = await prisma.survey.findUnique({
-        where: {
-          id: "67139ba729f6d26d45c4dd07",
-        },
-      });
-      if (post) {
-        res.json({
-          status: "success",
-          data: post
-        });
-      } else {
-        res.status(404).json({ message: "Sondage non trouvé" });
-      }
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
+// app.get("/", async (req: Request, res: Response) => {
+//     try {
+//       const post = await prisma.survey.findUnique({
+//         where: {
+//           id: "67139ba729f6d26d45c4dd07",
+//         },
+//       });
+//       if (post) {
+//         res.json({
+//           status: "success",
+//           data: post
+//         });
+//       } else {
+//         res.status(404).json({ message: "Sondage non trouvé" });
+//       }
+//     } catch (error: any) {
+//       res.status(500).json({ error: error.message });
+//     }
+// });
+app.get("/", (req: Request, res: Response) => {
+    res.json({ message: "Bienvenue sur l'API" });
+});
 
 // Enregistrement des autres routes
 app.use('/api', userRoute);  
