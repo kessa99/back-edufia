@@ -1,4 +1,4 @@
-// 1. Importation des dépendances
+// Importation des dépendances
 import express, { Request, Response, NextFunction } from 'express';
 import { PrismaClient } from '@prisma/client';
 import cors from 'cors';
@@ -9,22 +9,19 @@ import swaggerJSDoc from 'swagger-jsdoc';
 import dotenv from 'dotenv';
 import userRoute from './routes/user/userRoute';
 import surveyRoute from './routes/admin/surveyRoute';
-import { getSurvey } from './controllers/simpleUserController/simpleController';
 
-// 2. Initialisation de l'application express
 dotenv.config();
 const prisma = new PrismaClient();
 const app = express();
 
-// 2.1. Configuration de cors
+// Configuration de cors
 const corsOptions = {
-    origin: 'https://edufiasurveys.vercel.app/',
+    origin: 'https://edufiasurveys.vercel.app',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    preflightContinue: false,
     optionsSuccessStatus: 204
 };
 
-// 3. Middleware
+// Middleware
 app.use(cors(corsOptions));
 app.use(helmet());
 app.use(morgan('dev'));
@@ -32,44 +29,42 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.set('trust proxy', 1);
 
-// 4. Enregistrement des routes
-
-app.get("/", async (req, res) => {
+// Route racine
+app.get("/", async (req: Request, res: Response) => {
     try {
       const post = await prisma.survey.findUnique({
         where: {
           id: "67139ba729f6d26d45c4dd07",
         },
       });
-      res.json({
-        status: "success",
-        data: post
-      });
+      if (post) {
+        res.json({
+          status: "success",
+          data: post
+        });
+      } else {
+        res.status(404).json({ message: "Sondage non trouvé" });
+      }
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   });
-  
 
-// Fonction pour obtenir le sondage
-  
-app.use('/api', userRoute);  // Placer les routes avant le middleware 404
-app.use('/api/admin', surveyRoute);  // Placer les routes avant le middleware 404
+// Enregistrement des autres routes
+app.use('/api', userRoute);  
+app.use('/api/admin', surveyRoute);
 
-// Middleware pour gérer les routes non trouvées (404)
-app.use('*', (req: Request, res: Response, next: NextFunction) => {
+// Middleware pour gérer les routes non trouvées
+app.use('*', (req: Request, res: Response) => {
     res.status(404).json({
         message: `La route ${req.originalUrl} n'existe pas - 404 Route not found`
     });
 });
 
-console.timeLog('Demarrage du serveur', 'Initialisation des middlewares');
-
 const PORT = process.env.PORT || 3000;
 
-// 5. Démarrage du serveur
+// Démarrage du serveur
 app.listen(PORT, () => {
-    console.timeEnd('Demarrage du serveur');
-    console.log(`Serveur en cours de marche et disponible sur le http://localhost:${PORT}`);
-    console.log(`Decouvrez la documentation de notre api pour se projet sur http://localhost:${PORT}/api-docs`);
+    console.log(`Serveur en cours de marche et disponible sur http://localhost:${PORT}`);
+    console.log(`Documentation disponible sur http://localhost:${PORT}/api-docs`);
 });
