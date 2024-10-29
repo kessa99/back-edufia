@@ -17,7 +17,7 @@ const app = express();
 
 // 2.1. Configuration de cors
 const corsOptions = {
-    origin: '*',
+    origin: 'https://edufiasurveys.vercel.app/',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     preflightContinue: false,
     optionsSuccessStatus: 204
