@@ -16,7 +16,7 @@ const app = express();
 
 // Configuration de cors
 const corsOptions = {
-    origin: 'https://edufiasurveys.vercel.app',
+    origin: '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     optionsSuccessStatus: 204
 };
@@ -64,7 +64,7 @@ app.use('*', (req: Request, res: Response) => {
     });
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 80;
 
 // Démarrage du serveur
 app.listen(PORT, () => {
