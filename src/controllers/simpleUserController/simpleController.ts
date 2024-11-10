@@ -289,6 +289,16 @@ export const submitSurveyResponse = async (req: Request, res: Response) => {
             throw new Error(`Type de question non pris en charge: ${question.questionType}`);
         }
 
+        // Mettre à jour le nombre de participants du sondage
+        await prisma.survey.update({
+          where: { id: surveyId },
+          data: {
+            participantsCount: {
+              increment: 1,
+            },
+          },
+        });
+        
         const createdResponse = await prisma.response.create({
           data: {
             surveyId,
@@ -308,16 +318,6 @@ export const submitSurveyResponse = async (req: Request, res: Response) => {
         };
       })
     );
-
-    // Mettre à jour le nombre de participants du sondage
-    await prisma.survey.update({
-      where: { id: surveyId },
-      data: {
-        participantsCount: {
-          increment: 1,
-        },
-      },
-    });
 
     return res.status(200).json({
       message: 'Réponses soumises avec succès',

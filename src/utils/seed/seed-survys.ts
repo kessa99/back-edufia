@@ -118,23 +118,7 @@ const surveys = [
               { text: "Nous ne savons pas comment gérer nos dettes" },
             ],
         },
-        {
-            text: "Comment gérez-vous les fêtes de fin d'année ?",
-            questionType: "TEXT",
-        },
-        {
-            text: "Quelles sont vos principales préoccupations financières en tant que couple ?",
-            questionType: "TEXT",
-        },
-        {
-            text: "Y a-t-il des domaines où vous aimeriez améliorer votre gestion financière ?",
-            questionType: "TEXT",
-        },
-        {
-            text: "Que souhaiteriez-vous acquérir à l’issue de cette CCF 2024 ?",
-            questionType: "TEXT",
-        },
-        // Question de type rating
+
         {
             text: "Comment évaluez-vous votre confiance en votre capacité à gérer vos finances en tant que couple ?",
             questionType: "RATING",
