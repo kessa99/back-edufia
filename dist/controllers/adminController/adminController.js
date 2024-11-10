@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getStatistics = exports.getSurvey = exports.createSurvey = void 0;
+exports.getStatistics = exports.createSurvey = void 0;
 const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
 // fonction qui permet la creation de sondage
@@ -36,30 +36,6 @@ const createSurvey = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     }
 });
 exports.createSurvey = createSurvey;
-//fonction qui permet d'afficher un sondage avec ses questions et ses options
-const getSurvey = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { surveyId } = req.params;
-    try {
-        const survey = yield prisma.survey.findUnique({
-            where: { id: surveyId },
-            include: {
-                questions: {
-                    include: {
-                        options: true,
-                    },
-                },
-            },
-        });
-        if (!survey) {
-            return res.status(404).json({ error: "Sondage non trouvé" });
-        }
-        res.json(survey);
-    }
-    catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-exports.getSurvey = getSurvey;
 const getStatistics = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const statistics = yield prisma.statistics.findMany();

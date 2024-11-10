@@ -120,18 +120,13 @@ const surveys = [
             },
             {
                 text: "Comment gérez-vous vos dettes ensemble ?",
-                questionType: "MULTIPLE_CHOICE",
+                questionType: "SINGLE_CHOICE",
                 options: [
                     { text: "Nous avons un plan clair" },
                     { text: "Nous avons un plan vague" },
                     { text: "Nous ne savons pas comment gérer nos dettes" },
                 ],
             },
-            {
-                text: "Comment gérez-vous les fêtes de fin d'année ?",
-                questionType: "TEXT",
-            },
-            // Question de type rating
             {
                 text: "Comment évaluez-vous votre confiance en votre capacité à gérer vos finances en tant que couple ?",
                 questionType: "RATING",
