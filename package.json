@@ -5,7 +5,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "generate": "npx prisma generate",
-    "dev": "ts-node-dev src/index.ts",
+    "dev": "ts-node src/index.ts",
     "start": "node dist/index.js",
     "seed": "ts-node src/utils/seed/seed-survys.ts",
     "build": "tsc"
