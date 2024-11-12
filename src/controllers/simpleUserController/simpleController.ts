@@ -225,11 +225,15 @@ export const getSurvey = async (req: Request, res: Response) => {
 export const submitSurveyResponse = async (req: Request, res: Response) => {
   const { surveyId, responses } = req.body;
 
+  console.log('Début de la soumission des réponses', { surveyId, responses });
+
   if (!surveyId || !Array.isArray(responses)) {
+    console.log('Entrée invalide : surveyId ou responses manquants');
     return res.status(400).json({ message: 'Entrée invalide : surveyId et responses sont requis' });
   }
 
   try {
+    console.log('Récupération du sondage avec l\'id:', surveyId);
     const survey = await prisma.survey.findUnique({
       where: { id: surveyId },
       include: {
@@ -242,15 +246,19 @@ export const submitSurveyResponse = async (req: Request, res: Response) => {
     });
 
     if (!survey) {
+      console.log('Sondage non trouvé');
       return res.status(404).json({ message: 'Sondage non trouvé' });
     }
 
+    console.log('Sondage trouvé, traitement des réponses');
     const createdResponses = await Promise.all(
       responses.map(async (response: any) => {
+        console.log('Traitement de la réponse:', response);
         const { questionId, optionId, textResponse, answer } = response;
         const question = survey.questions.find(q => q.id === questionId);
 
         if (!question) {
+          console.log(`Question avec l'id ${questionId} non trouvée`);
           throw new Error(`Question avec l'id ${questionId} non trouvée`);
         }
 
@@ -259,10 +267,13 @@ export const submitSurveyResponse = async (req: Request, res: Response) => {
         switch (question.questionType) {
           case 'SINGLE_CHOICE':
           case 'MULTIPLE_CHOICE':
+            console.log(`Traitement d'une question de type ${question.questionType}`);
             if (question.questionType === 'SINGLE_CHOICE' && (!optionId || typeof optionId !== 'string')) {
+              console.log('OptionId est requis et doit être une chaîne de caractères pour les questions à choix unique');
               throw new Error('OptionId est requis et doit être une chaîne de caractères pour les questions à choix unique');
             }
             if (question.questionType === 'MULTIPLE_CHOICE' && !Array.isArray(optionId)) {
+              console.log('OptionId doit être un tableau pour les questions à choix multiples');
               throw new Error('OptionId doit être un tableau pour les questions à choix multiples');
             }
             const selectedOptions = Array.isArray(optionId) 
@@ -272,23 +283,29 @@ export const submitSurveyResponse = async (req: Request, res: Response) => {
             break;
 
           case 'TEXT':
+            console.log('Traitement d\'une question de type texte');
             if (typeof textResponse !== 'string') {
+              console.log('La réponse textuelle est requise pour les questions de type texte');
               throw new Error('La réponse textuelle est requise pour les questions de type texte');
             }
             answerText = textResponse;
             break;
 
           case 'RATING':
+            console.log('Traitement d\'une question de type évaluation');
             if (typeof answer !== 'string' && typeof answer !== 'number') {
+              console.log('La réponse (answer) est requise et doit être une chaîne ou un nombre pour les questions de type évaluation');
               throw new Error('La réponse (answer) est requise et doit être une chaîne ou un nombre pour les questions de type évaluation');
             }
             answerText = answer.toString();
             break;
 
           default:
+            console.log(`Type de question non pris en charge: ${question.questionType}`);
             throw new Error(`Type de question non pris en charge: ${question.questionType}`);
         }
 
+        console.log(`Création de la réponse pour la question ${questionId}`);
         const createdResponse = await prisma.response.create({
           data: {
             surveyId,
@@ -309,17 +326,22 @@ export const submitSurveyResponse = async (req: Request, res: Response) => {
       })
     );
 
-    // Mettre à jour le nombre de participants du sondage une seule fois
-    await prisma.survey.update({
-      where: { id: surveyId },
-      data: {
-        participantsCount: {
-          increment: 1,
+    console.log('Réponses traitées, mise à jour du sondage');
+    // Utilisation d'une transaction pour garantir l'atomicité de l'opération
+    await prisma.$transaction(async (prisma) => {
+      console.log('Mise à jour du compteur de participants');
+      await prisma.survey.update({
+        where: { id: surveyId },
+        data: {
+          participantsCount: {
+            increment: 1,
+          },
         },
-      },
+      });
     });
 
-    res.status(200).json({
+    console.log('Réponses soumises avec succès');
+    return res.status(200).json({
       message: 'Réponses soumises avec succès',
       responses: createdResponses,
     });
@@ -328,6 +350,8 @@ export const submitSurveyResponse = async (req: Request, res: Response) => {
     return res.status(500).json({ message: 'Erreur interne du serveur', error: error.message });
   }
 };
+
+
 
 
 

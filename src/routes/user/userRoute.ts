@@ -51,6 +51,8 @@ router.post("/submit-survey", async (req, res) => {
   }
 });
 
+// router.post("submit", submitSurveyResponse);
+
 router.get("/surveys/:id/questions-responses", async (req, res) => {
   try {
     await getSurveyDetails(req, res);
