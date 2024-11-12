@@ -110,12 +110,13 @@ const surveys = [
             ],
         },
         {
-            text: "Comment gérez-vous vos dettes ensemble ?",
+            text: "Si oui, Comment gérez-vous vos dettes ensemble ?",
             questionType: "SINGLE_CHOICE",
             options: [
               { text: "Nous avons un plan clair" },
               { text: "Nous avons un plan vague" },
               { text: "Nous ne savons pas comment gérer nos dettes" },
+              { text: "Non, heuresement nous n'avons pas de dettes" },
             ],
         },
 
